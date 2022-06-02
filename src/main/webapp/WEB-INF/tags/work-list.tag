@@ -9,6 +9,8 @@
 
 <%@ tag language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:requestEncoding value="UTF-8" />
+<fmt:setBundle basename = "resource" var = "mess"/>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
 <head>
@@ -16,7 +18,7 @@
 </head>
 <body>
 <div class="list-group">
-    <p class="mt-4 text-center">List of work in the task</p>
+    <p class="mt-4 text-center"><fmt:message key="List_of_work" bundle = "${mess}"/></p>
     <c:if test="${not empty works}">
         <c:forEach var="work" items="${works}">
             <c:if test="${work.finishStatus==true}">

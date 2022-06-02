@@ -29,25 +29,20 @@
     <div class="col-xs-9 col-sm-8 col-md-7 col-lg-6 col-xl-5 col-xxl-4">
         <form action="auth" method="post" class="border border-light p-5 row justify-content-center">
 
-            <p class="h4 mb-4 text-center">Sign in</p>
+            <p class="h4 mb-4 text-center"><fmt:message key="Sign_in" bundle = "${mess}"/></p>
 
             <input type="email" name="email" required id="defaultLoginFormEmail" class="form-control mb-4" placeholder="E-mail">
 
             <input type="password" name="psw" required id="defaultLoginFormPassword" class="form-control mb-4" placeholder="Password">
 
             <div class="d-flex justify-content-between">
+
                 <div>
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="defaultLoginFormRemember">
-                        <label class="custom-control-label" for="defaultLoginFormRemember">Remember me</label>
-                    </div>
-                </div>
-                <div>
-                    <a href="register">Don't have an account?</a>
+                    <a href="register"><fmt:message key="Dont_have_account" bundle = "${mess}"/></a>
                 </div>
             </div>
 
-            <button class="btn btn-info btn-block my-4" type="submit">Sign in</button>
+            <button class="btn btn-info btn-block my-4" type="submit"><fmt:message key="Sign_in" bundle = "${mess}"/></button>
 
         </form>
     </div></div>
