@@ -1,0 +1,93 @@
+CREATE DATABASE IF NOT EXISTS `finproject` ;
+
+CREATE TABLE IF NOT EXISTS `finproject`.`bill` (
+  `bill_id` bigint NOT NULL AUTO_INCREMENT,
+  `total_amount` decimal(19,2) DEFAULT 0,
+  `paid_amount` decimal(19,2) DEFAULT 0,
+  PRIMARY KEY (`bill_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `finproject`.`user` (
+  `user_id` bigint NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(45) DEFAULT NULL,
+  `last_name` varchar(45) DEFAULT NULL,
+  `email` varchar(45) NOT NULL,
+  `password_hash` varchar(45) DEFAULT NULL,
+  `position` enum('CUSTOMER','MANAGER','DEVELOPER') DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE INDEX `new_tablecol_UNIQUE` (`email` ASC) VISIBLE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `finproject`.`customer` (
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`user_id`),
+  CONSTRAINT `customer_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `finproject`.`user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `finproject`.`manager` (
+  `user_id` bigint NOT NULL,
+  PRIMARY KEY (`user_id`),
+  CONSTRAINT `manager_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `finproject`.`user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `finproject`.`qualification` (
+  `qualification_id` int NOT NULL,
+  `qualification` varchar(45) NOT NULL,
+  PRIMARY KEY (`qualification_id`),
+  UNIQUE INDEX `new_tablecol_UNIQUE` (`qualification` ASC) VISIBLE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO `finproject`.`qualification` (`qualification`, `qualification_id`) VALUES ('JUNIOR', 1);
+INSERT INTO `finproject`.`qualification` (`qualification`, `qualification_id`) VALUES ('MIDDLE', 2);
+INSERT INTO `finproject`.`qualification` (`qualification`, `qualification_id`) VALUES ('SENIOR', 3);
+
+
+
+CREATE TABLE IF NOT EXISTS `finproject`.`technical_task` (
+  `technical_task_id` bigint NOT NULL AUTO_INCREMENT,
+  `technical_task_title` text NOT NULL,
+  `customer_id` bigint NOT NULL,
+  PRIMARY KEY (`technical_task_id`),
+  CONSTRAINT `technical_task_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `finproject`.`customer` (`user_id`)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `finproject`.`work` (
+  `work_id` bigint NOT NULL AUTO_INCREMENT,
+  `technical_task_id` bigint NOT NULL,
+  `finish_status` BOOLEAN DEFAULT 0,
+  `required_qualification` int DEFAULT NULL,
+  `number_of_required_specialists` int DEFAULT NULL,
+  `work_description` TEXT NOT NULL,
+  PRIMARY KEY (`work_id`),
+  KEY `technical_task_id` (`technical_task_id`),
+  KEY `required_qualification` (`required_qualification`),
+  CONSTRAINT `work_ibfk_1` FOREIGN KEY (`technical_task_id`) REFERENCES `finproject`.`technical_task` (`technical_task_id`),
+  CONSTRAINT `work_ibfk_2` FOREIGN KEY (`required_qualification`) REFERENCES `finproject`.`qualification` (`qualification_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `finproject`.`project` (
+  `project_name` TEXT NOT NULL,
+  `project_id` bigint NOT NULL AUTO_INCREMENT,
+  `manager_id` bigint NOT NULL,
+  `technical_task_id` bigint NOT NULL,
+  `bill_id` bigint DEFAULT NULL,
+  `status` enum('NOTSTARTED','INPROGRESS','TEST','ALMOSTREADY','COMPLETED') DEFAULT 'NOTSTARTED',
+  PRIMARY KEY (`project_id`),
+  KEY `manager_id` (`manager_id`),
+  KEY `technical_task_id` (`technical_task_id`),
+  KEY `bill_id` (`bill_id`),
+  CONSTRAINT `project_ibfk_1` FOREIGN KEY (`manager_id`) REFERENCES `finproject`.`manager` (`user_id`),
+  CONSTRAINT `project_ibfk_3` FOREIGN KEY (`technical_task_id`) REFERENCES `finproject`.`technical_task` (`technical_task_id`),
+  CONSTRAINT `project_ibfk_4` FOREIGN KEY (`bill_id`) REFERENCES `finproject`.`bill` (`bill_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `finproject`.`developer` (
+  `user_id` bigint NOT NULL,
+  `qualification_id` int NOT NULL DEFAULT 1,
+  `project_id` BIGINT NULL DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  KEY `qualification_id` (`qualification_id`),
+  CONSTRAINT `developer_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `finproject`.`user` (`user_id`),
+  CONSTRAINT `developer_ibfk_2` FOREIGN KEY (`qualification_id`) REFERENCES `finproject`.`qualification` (`qualification_id`),
+  CONSTRAINT `developer_ibfk_3` FOREIGN KEY (`project_id`) REFERENCES `finproject`.`project` (`project_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

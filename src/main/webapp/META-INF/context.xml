@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+
+<Context>
+    <Resourcex
+            name="jdbc/pool"
+            description="Container"
+            type="javax.sql.DataSource"
+            username="upmnynr8de9gug9c"
+            password="Y5G3Oc9X9M8T1obIQvsm"
+            driverClassName="com.mysql.cj.jdbc.Driver"
+            url="jdbc:mysql://bicyun7l9t2mwlhhaaxv-mysql.services.clever-cloud.com:3306/bicyun7l9t2mwlhhaaxv?autoReconnect=true"
+            validationQuery="select 1"
+            maxActive="1"
+            maxIdle="0"
+            maxWait="10000"
+    />
+    <Resource
+            name="jdbc/pool/local"
+            description="Container"
+            type="javax.sql.DataSource"
+            username="root"
+            password="1111"
+            driverClassName="com.mysql.cj.jdbc.Driver"
+            url="jdbc:mysql://localhost:3306/finproject?autoReconnect=true&amp;allowMultiQueries=true"
+            validationQuery="select 1"
+            maxActive="1"
+            maxIdle="0"
+            maxWait="10000"
+    />
+
+</Context>
