@@ -9,7 +9,15 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<fmt:requestEncoding value="UTF-8" />
+<fmt:setBundle basename = "resource" var = "mess"/>
 
+<fmt:message key="Sign_in" var="Sign_in" bundle = "${mess}"/>
+<fmt:message key="email" var="email" bundle = "${mess}"/>
+<fmt:message key="password" var="password" bundle = "${mess}"/>
+<fmt:message key="Enter_Email" var="Enter_Email" bundle = "${mess}"/>
+<fmt:message key="Enter_Password" var="Enter_Password" bundle = "${mess}"/>
+<fmt:message key="Dont_have_account" var="Dont_have_account" bundle = "${mess}"/>
 <html>
 <head>
     <meta charset="utf-8">
@@ -29,20 +37,20 @@
     <div class="col-xs-9 col-sm-8 col-md-7 col-lg-6 col-xl-5 col-xxl-4">
         <form action="auth" method="post" class="border border-light p-5 row justify-content-center">
 
-            <p class="h4 mb-4 text-center"><fmt:message key="Sign_in" bundle = "${mess}"/></p>
+            <p class="h4 mb-4 text-center">${Sign_in}</p>
 
-            <input type="email" name="email" required id="defaultLoginFormEmail" class="form-control mb-4" placeholder="E-mail">
+            <input type="email" name="email" required id="defaultLoginFormEmail" class="form-control mb-4" placeholder="${Enter_Email}">
 
-            <input type="password" name="psw" required id="defaultLoginFormPassword" class="form-control mb-4" placeholder="Password">
+            <input type="password" name="psw" required id="defaultLoginFormPassword" class="form-control mb-4" placeholder="${Enter_Password}">
 
             <div class="d-flex justify-content-between">
 
                 <div>
-                    <a href="register"><fmt:message key="Dont_have_account" bundle = "${mess}"/></a>
+                    <a href="register">${Dont_have_account}</a>
                 </div>
             </div>
 
-            <button class="btn btn-info btn-block my-4" type="submit"><fmt:message key="Sign_in" bundle = "${mess}"/></button>
+            <button class="btn btn-info btn-block my-4" type="submit">${Sign_in}</button>
 
         </form>
     </div></div>
