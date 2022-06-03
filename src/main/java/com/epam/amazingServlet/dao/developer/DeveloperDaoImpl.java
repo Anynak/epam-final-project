@@ -136,34 +136,33 @@ public class DeveloperDaoImpl implements DeveloperDao {
 
     @Override
     public Long create(Developer developer) throws DaoException {
-        Long userId = null;
+
         try (Connection con = conBuilder.getConnection()) {
             con.setAutoCommit(false);
             String query1 = "INSERT INTO user (`first_name`, `last_name`, `email`, `password_hash`, `position`) VALUES " +
                     "(?, ?, ?, ?, ?);";
-            PreparedStatement ps = con.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, developer.getFirstName());
-            ps.setString(2, developer.getLastName());
-            ps.setString(3, developer.getEmail());
-            ps.setString(4, developer.getPassHash());
-            ps.setString(5, developer.getPosition().name());
-            ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs != null && rs.next()) {
-                userId = rs.getLong(1);
-                rs.close();
+            try (PreparedStatement ps1 = con.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS)) {
+                ps1.setString(1, developer.getFirstName());
+                ps1.setString(2, developer.getLastName());
+                ps1.setString(3, developer.getEmail());
+                ps1.setString(4, developer.getPassHash());
+                ps1.setString(5, developer.getPosition().name());
+                ps1.executeUpdate();
+                ResultSet rs = ps1.getGeneratedKeys();
+                if (rs != null && rs.next()) {
+                    long userId = rs.getLong(1);
+                    rs.close();
+                    String query3 = "INSERT INTO developer (`user_id` ) VALUES (" + userId + ");";
+                    try (PreparedStatement ps2 = con.prepareStatement(query3)) {
+                        ps2.executeUpdate();
+                        con.commit();
+                        return userId;
+                    }
+                } else throw new DaoException("Transaction failed");
             }
-            String query3 = "INSERT INTO developer (`user_id` ) VALUES (" + userId + ");";
-            System.out.println(query3);
-            ps = con.prepareStatement(query3);
-            ps.executeUpdate();
-            con.commit();
-            ps.close();
-
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-        return userId;
     }
 
     @Override
@@ -205,20 +204,17 @@ public class DeveloperDaoImpl implements DeveloperDao {
                 "WHERE (user_id = ?" + ");\n";
 
         try (Connection con = conBuilder.getConnection()) {
-            PreparedStatement ps = con.prepareStatement(query);
-            ps.setString(1, developer.getFirstName());
-            ps.setString(2, developer.getLastName());
-            ps.setString(3, developer.getEmail());
-            ps.setString(4, developer.getPassHash());
-            ps.setString(5, developer.getPosition().name());
-
-            ps.setLong(6, developer.getId());
-            ps.setInt(7, developer.getQualification().getId());
-            ps.setLong(8, developer.getId());
-            System.out.println(ps);
-            ps.executeUpdate();
-            ps.close();
-
+            try (PreparedStatement ps = con.prepareStatement(query)) {
+                ps.setString(1, developer.getFirstName());
+                ps.setString(2, developer.getLastName());
+                ps.setString(3, developer.getEmail());
+                ps.setString(4, developer.getPassHash());
+                ps.setString(5, developer.getPosition().name());
+                ps.setLong(6, developer.getId());
+                ps.setInt(7, developer.getQualification().getId());
+                ps.setLong(8, developer.getId());
+                ps.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new DaoException(e);
         }
@@ -243,8 +239,6 @@ public class DeveloperDaoImpl implements DeveloperDao {
 
     @Override
     public void delete(Long id) throws DaoException {
-        String query = "DELETE FROM user WHERE (user_id = " + id + ");" +
-                "DELETE FROM developer WHERE (user_id = " + id + ");";
-        SQLUtil.executeSqlUpdate(conBuilder, query);
+
     }
 }

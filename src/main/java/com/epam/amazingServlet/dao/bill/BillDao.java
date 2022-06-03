@@ -9,5 +9,5 @@ import java.math.BigDecimal;
 public interface BillDao extends Dao<Bill, Long> {
 
     Long create(Bill bill, Long projectId)throws DaoException;
-    BigDecimal addToPaidAmountByProjectId(Long billId, BigDecimal addition) throws DaoException;
+    void addToPaidAmountByProjectId(Long billId, BigDecimal addition) throws DaoException;
 }

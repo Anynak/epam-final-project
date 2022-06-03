@@ -31,17 +31,16 @@ public class WorkDaoImpl implements WorkDao {
 
     @Override
     public Long create(Work work) throws DaoException {
-
+        String query = "INSERT INTO `work` (" +
+                "`technical_task_id`, " +
+                "`required_qualification`, " +
+                "`number_of_required_specialists`, " +
+                "`work_description`) " +
+                "VALUES " +
+                "(?, ?, ?, ?);";
         Long workId = null;
-        try (Connection con = conBuilder.getConnection()) {
-            String query = "INSERT INTO `work` (" +
-                    "`technical_task_id`, " +
-                    "`required_qualification`, " +
-                    "`number_of_required_specialists`, " +
-                    "`work_description`) " +
-                    "VALUES " +
-                    "(?, ?, ?, ?);";
-            PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        try (Connection con = conBuilder.getConnection();
+        PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, work.getTechnicalTaskId());
             ps.setInt(2, work.getRequiredQualification().getId());
             ps.setInt(3, work.getNumberOfRequiredSpecialists());
@@ -53,8 +52,6 @@ public class WorkDaoImpl implements WorkDao {
                 workId = rs.getLong(1);
                 rs.close();
             }
-            ps.close();
-
         } catch (SQLException e) {
             throw new DaoException(e);
         }
@@ -90,17 +87,14 @@ public class WorkDaoImpl implements WorkDao {
                 "`work_description` = ?, " +
                 "`technical_task_id` = ? " +
                 "WHERE (`work_id` = ?);";
-        try (Connection con = conBuilder.getConnection()) {
-
-            PreparedStatement ps = con.prepareStatement(query);
+        try (Connection con = conBuilder.getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
             ps.setInt(1, work.getRequiredQualification().getId());
             ps.setInt(2, work.getNumberOfRequiredSpecialists());
             ps.setString(3, work.getDescription());
             ps.setLong(4, work.getTechnicalTaskId());
             ps.setLong(5, work.getId());
-            System.out.println(query);
             ps.executeUpdate();
-            ps.close();
         } catch (SQLException e) {
             throw new DaoException(e);
         }

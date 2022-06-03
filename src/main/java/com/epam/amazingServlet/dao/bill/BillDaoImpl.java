@@ -30,33 +30,32 @@ public class BillDaoImpl implements BillDao {
             String query1 = "INSERT INTO " +
                     "`bill` (`total_amount`) " +
                     "VALUES (?);\n ";
-            PreparedStatement ps = con.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
-            ps.setBigDecimal(1, bill.getTotalAmount());
-            ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-
-            if (rs != null && rs.next()) {
-                long billId = rs.getLong(1);
-                rs.close();
-                String query2 = "UPDATE `project` SET `bill_id` = ? WHERE (`project_id` = ?);";
-                ps = con.prepareStatement(query2);
-                ps.setLong(1,billId);
-                ps.setLong(2,projectId);
-                ps.executeUpdate();
-                con.commit();
-                ps.close();
-                return billId;
-
+            try (PreparedStatement ps1 = con.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS)){
+                ps1.setBigDecimal(1, bill.getTotalAmount());
+                ps1.executeUpdate();
+                ResultSet rs = ps1.getGeneratedKeys();
+                if (rs != null && rs.next()) {
+                    long billId = rs.getLong(1);
+                    rs.close();
+                    String query2 = "UPDATE `project` SET `bill_id` = ? WHERE (`project_id` = ?);";
+                    try (PreparedStatement ps2 = con.prepareStatement(query2)){
+                        ps2.setLong(1,billId);
+                        ps2.setLong(2,projectId);
+                        ps2.executeUpdate();
+                        con.commit();
+                        return billId;
+                    }
+                }else throw new DaoException("Transaction failed");
             }
+
         } catch (SQLException e) {
             throw new DaoException(e);
         }
 
-        return null;
     }
 
     @Override
-    public BigDecimal addToPaidAmountByProjectId(Long projectId, BigDecimal addition) throws DaoException {
+    public void addToPaidAmountByProjectId(Long projectId, BigDecimal addition) throws DaoException {
         String query = "UPDATE bill INNER JOIN project \n" +
                 "ON `bill`.`bill_id` = `project`.`bill_id`\n" +
                 "SET `total_amount` = `total_amount`+ ? \n" +
@@ -69,7 +68,6 @@ public class BillDaoImpl implements BillDao {
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-        return null;
     }
 
     @Override

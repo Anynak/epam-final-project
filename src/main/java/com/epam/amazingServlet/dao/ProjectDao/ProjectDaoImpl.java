@@ -45,8 +45,8 @@ public class ProjectDaoImpl implements ProjectDao {
                 "(`manager_id`, `technical_task_id`, `project_name`) " +
                 "VALUES (?, ?, ?);\n";
         Long projectId = null;
-        try (Connection con = connectionBuilder.getConnection()) {
-            PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        try (Connection con = connectionBuilder.getConnection();
+             PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, project.getManagerId());
             ps.setLong(2, project.getTechnicalTask().getId());
             ps.setString(3, project.getProjectName());
@@ -56,7 +56,6 @@ public class ProjectDaoImpl implements ProjectDao {
                 projectId = rs.getLong(1);
                 rs.close();
             }
-            ps.close();
 
         } catch (SQLException e) {
             throw new DaoException(e);

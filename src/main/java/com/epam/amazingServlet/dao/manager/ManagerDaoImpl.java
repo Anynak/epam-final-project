@@ -75,34 +75,33 @@ public class ManagerDaoImpl implements ManagerDao {
 
     @Override
     public Long create(Manager manager) throws DaoException {
-        Long userId = null;
+
         try (Connection con = conBuilder.getConnection()) {
             con.setAutoCommit(false);
             String query1 = "INSERT INTO user (`first_name`, `last_name`, `email`, `password_hash`, `position`) VALUES " +
                     "(?, ?, ?, ?, ?);";
-            PreparedStatement ps = con.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, manager.getFirstName());
-            ps.setString(2, manager.getLastName());
-            ps.setString(3, manager.getEmail());
-            ps.setString(4, manager.getPassHash());
-            ps.setString(5, manager.getPosition().name());
-            ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs != null && rs.next()) {
-                userId = rs.getLong(1);
-                rs.close();
-                String query2 = "INSERT INTO manager (`user_id`) VALUES (" + userId + ");";
-                ps = con.prepareStatement(query2);
-                ps.executeUpdate();
-                con.commit();
-                ps.close();
+            try (PreparedStatement ps1 = con.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS)) {
+                ps1.setString(1, manager.getFirstName());
+                ps1.setString(2, manager.getLastName());
+                ps1.setString(3, manager.getEmail());
+                ps1.setString(4, manager.getPassHash());
+                ps1.setString(5, manager.getPosition().name());
+                ps1.executeUpdate();
+                ResultSet rs = ps1.getGeneratedKeys();
+                if (rs != null && rs.next()) {
+                    long userId = rs.getLong(1);
+                    rs.close();
+                    String query2 = "INSERT INTO manager (`user_id`) VALUES (" + userId + ");";
+                    try (PreparedStatement ps = con.prepareStatement(query2)) {
+                        ps.executeUpdate();
+                        con.commit();
+                        return userId;
+                    }
+                } else throw new DaoException("Transaction failed");
             }
-
-
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-        return userId;
     }
 
     @Override
@@ -139,8 +138,8 @@ public class ManagerDaoImpl implements ManagerDao {
                 "position = ? " + " \n" +
                 "WHERE (user_id = ? " + ");\n";
 
-        try (Connection con = conBuilder.getConnection()) {
-            PreparedStatement ps = con.prepareStatement(query);
+        try (Connection con = conBuilder.getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
             ps.setString(1, manager.getFirstName());
             ps.setString(2, manager.getLastName());
             ps.setString(3, manager.getEmail());
@@ -149,7 +148,6 @@ public class ManagerDaoImpl implements ManagerDao {
             ps.setLong(6, manager.getId());
             System.out.println(ps);
             ps.executeUpdate();
-            ps.close();
 
         } catch (SQLException e) {
             throw new DaoException(e);

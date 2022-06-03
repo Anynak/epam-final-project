@@ -9,7 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomerDaoImpl implements CustomerDao{
+public class CustomerDaoImpl implements CustomerDao {
 
     public CustomerDaoImpl(ConnectionBuilder conBuilder) {
         this.conBuilder = conBuilder;
@@ -30,33 +30,34 @@ public class CustomerDaoImpl implements CustomerDao{
 
     @Override
     public Long create(Customer customer) throws DaoException {
-        Long userId = null;
+
         try (Connection con = conBuilder.getConnection()) {
             con.setAutoCommit(false);
             String query1 = "INSERT INTO user (`first_name`, `last_name`, `email`, `password_hash`, `position`) VALUES " +
                     "(?, ?, ?, ?, ?);";
-            PreparedStatement ps = con.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, customer.getFirstName());
-            ps.setString(2, customer.getLastName());
-            ps.setString(3, customer.getEmail());
-            ps.setString(4, customer.getPassHash());
-            ps.setString(5, customer.getPosition().name());
-            ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs != null && rs.next()) {
-                userId = rs.getLong(1);
-                rs.close();
+            try (PreparedStatement ps1 = con.prepareStatement(query1, Statement.RETURN_GENERATED_KEYS)) {
+                ps1.setString(1, customer.getFirstName());
+                ps1.setString(2, customer.getLastName());
+                ps1.setString(3, customer.getEmail());
+                ps1.setString(4, customer.getPassHash());
+                ps1.setString(5, customer.getPosition().name());
+                ps1.executeUpdate();
+                ResultSet rs = ps1.getGeneratedKeys();
+                if (rs != null && rs.next()) {
+                    long userId = rs.getLong(1);
+                    rs.close();
+                    String query3 = "INSERT INTO customer (`user_id`) VALUES (" + userId + ");";
+                    try (PreparedStatement ps2 = con.prepareStatement(query3)) {
+                        ps2.executeUpdate();
+                        con.commit();
+                        return userId;
+                    }
+                } else throw new DaoException("Transaction failed");
             }
-            String query3 = "INSERT INTO customer (`user_id`) VALUES (" + userId + ");";
-            ps = con.prepareStatement(query3);
-            ps.executeUpdate();
-            con.commit();
-            ps.close();
-
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-        return userId;
+
     }
 
     @Override
@@ -73,7 +74,7 @@ public class CustomerDaoImpl implements CustomerDao{
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 customer = getCustomerFromRS(rs);
-                System.out.println("customer DAO "+ customer);
+                System.out.println("customer DAO " + customer);
                 rs.close();
             }
         } catch (SQLException e) {
@@ -86,29 +87,28 @@ public class CustomerDaoImpl implements CustomerDao{
     @Override
     public void update(Customer customer) throws DaoException {
 
-            String query = "UPDATE user \n" +
-                    "SET first_name = ? " + ", \n" +
-                    "last_name = ? " + ", \n" +
-                    "email = ? " + ", \n" +
-                    "password_hash = ? " + ", \n" +
-                    "position = ? " + " \n" +
-                    "WHERE (user_id = ? " + ");\n";
+        String query = "UPDATE user \n" +
+                "SET first_name = ? " + ", \n" +
+                "last_name = ? " + ", \n" +
+                "email = ? " + ", \n" +
+                "password_hash = ? " + ", \n" +
+                "position = ? " + " \n" +
+                "WHERE (user_id = ? " + ");\n";
 
-            try (Connection con = conBuilder.getConnection()) {
-                PreparedStatement ps = con.prepareStatement(query);
-                ps.setString(1, customer.getFirstName());
-                ps.setString(2, customer.getLastName());
-                ps.setString(3, customer.getEmail());
-                ps.setString(4, customer.getPassHash());
-                ps.setString(5, customer.getPosition().name());
-                ps.setLong(6, customer.getId());
-                System.out.println(ps);
-                ps.executeUpdate();
-                ps.close();
+        try (Connection con = conBuilder.getConnection();
+             PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setString(1, customer.getFirstName());
+            ps.setString(2, customer.getLastName());
+            ps.setString(3, customer.getEmail());
+            ps.setString(4, customer.getPassHash());
+            ps.setString(5, customer.getPosition().name());
+            ps.setLong(6, customer.getId());
+            System.out.println(ps);
+            ps.executeUpdate();
 
-            } catch (SQLException e) {
-                throw new DaoException(e);
-            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
     }
 
     @Override
@@ -138,7 +138,6 @@ public class CustomerDaoImpl implements CustomerDao{
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 customer = getCustomerFromRS(rs);
-                rs.close();
             }
         } catch (SQLException e) {
             throw new DaoException(e);
